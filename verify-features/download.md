@@ -11,3 +11,8 @@
 - **Gotchas:** with no `data/raw/`, verify downloads about 6 MB from EUR-Lex, so it needs the
   network. If EUR-Lex changes its HTML, the chunk count changes and `real-run-A` fails: that
   is the intended alarm, not a reason to loosen the check.
+- **Gotcha, cloud runners:** EUR-Lex answers GitHub's runners with an empty page. The
+  download now refuses to save such a page (`SourceUnavailable`), and the workflow runs
+  `python verify.py --allow-no-source`: the real run is then reported as NOT RUN and the
+  last line says so. Without the flag a missing source is a FAIL. So a green run on GitHub
+  covers compile, units and questions only; the real run is checked on a normal machine.

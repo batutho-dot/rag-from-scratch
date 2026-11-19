@@ -4,6 +4,11 @@ all output goes to a temporary folder.
 
     python verify.py          fast checks plus a real run of version A (a few seconds)
     python verify.py --full   also runs version B (embedding model, about 2 minutes)
+    python verify.py --allow-no-source
+                              for machines EUR-Lex refuses to serve (GitHub's runners):
+                              if the texts cannot be downloaded, the real run is reported
+                              as NOT RUN and the last line says so. Without this flag a
+                              missing source is a FAIL.
 
 Uses the downloaded HTML in data/raw/ when present; otherwise downloads it (network).
 """
@@ -19,6 +24,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
+
+from rag.download import SourceUnavailable  # noqa: E402
 
 
 class Fail(Exception):
@@ -119,6 +126,7 @@ def step_real_b(tmp):
 
 def main():
     full = "--full" in sys.argv
+    allow_no_source = "--allow-no-source" in sys.argv
     print(f"verify-repo: {ROOT}")
     steps = [("compile", step_compile), ("units", step_units), ("questions", step_questions), ("real-run-A", step_real_a)]
     if full:
@@ -128,6 +136,13 @@ def main():
         for name, fn in steps:
             try:
                 print(f"{name}: ok ({fn(tmp)})")
+            except SourceUnavailable as e:
+                if not allow_no_source:
+                    print(f"verify: FAIL at {name}: {e}")
+                    return 1
+                print(f"{name}: NOT RUN ({e})")
+                print("verify: PASS (real run NOT exercised: the source texts could not be downloaded here)")
+                return 0
             except Fail as e:
                 print(f"verify: FAIL at {name}: {e}")
                 return 1

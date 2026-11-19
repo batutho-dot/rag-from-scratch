@@ -10,6 +10,13 @@ from pathlib import Path
 from rag.sources import SOURCES, url
 
 DATA = Path(__file__).resolve().parent.parent / "data"
+MIN_WORDS = 1000  # the shortest of the three texts has about 18,000 words
+
+
+class SourceUnavailable(RuntimeError):
+    """The official source did not return the document."""
+
+
 BLOCK_TAGS = {"p", "td", "th", "li", "h1", "h2", "h3", "h4", "div", "tr", "br"}
 
 
@@ -51,8 +58,18 @@ def main(data: Path = DATA) -> None:
         if not raw.exists():
             req = urllib.request.Request(url(src["celex"]), headers={"User-Agent": "rag-from-scratch/0.1"})
             with urllib.request.urlopen(req, timeout=120) as resp:
-                raw.write_bytes(resp.read())
+                body, status = resp.read(), resp.status
+            words = len(html_to_text(body.decode("utf-8", errors="replace")).split())
+            if words < MIN_WORDS:
+                # EUR-Lex answers some machines (cloud runners, for example) with an empty
+                # page instead of the document. Never save that as if it were the text.
+                raise SourceUnavailable(
+                    f"EUR-Lex sent no document for {src['celex']} "
+                    f"(HTTP {status}, {len(body)} bytes, {words} words)")
+            raw.write_bytes(body)
         text = html_to_text(raw.read_text(encoding="utf-8"))
+        if len(text.split()) < MIN_WORDS:
+            raise SourceUnavailable(f"{raw} holds no document; delete it and download again")
         (data / "text" / f"{key}.txt").write_text(text, encoding="utf-8")
         print(f"{key:9s} {src['celex']}  {len(text.split()):>7,} words")
 
