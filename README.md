@@ -2,7 +2,7 @@
 
 A small search system, built by hand, that finds the passage of EU sustainability law answering a plain-English question, with a word-counting and an embedding version.
 
-> **Part of a series on RAG over EU sustainability law:** **rag-from-scratch** (retrieval built by hand) → rag-eval (not public yet; measured: three scores and a Claude judge) → rag-claude-citations (not public yet; API-native: citations and caching)
+> **Part of a series on RAG over EU sustainability law:** **rag-from-scratch** (retrieval built by hand) → [rag-eval](https://github.com/batutho-dot/rag-eval) (measured: three scores and a Claude judge) → rag-claude-citations (not public yet; API-native: citations and caching)
 
 **Result:** on 10 questions at k = 5, version A (TF-IDF word counts, written by hand in numpy) and version B (`BAAI/bge-small-en-v1.5` embedding model on the CPU) both score 6 / 10.
 

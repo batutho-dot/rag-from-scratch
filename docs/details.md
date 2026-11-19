@@ -4,7 +4,7 @@ This file holds the longer notes moved out of the README.
 
 ## Series header, second line
 
-This is part 1, the starting point. Next: rag-eval (not public yet) measures this pipeline end to end.
+This is part 1, the starting point. Next: [rag-eval](https://github.com/batutho-dot/rag-eval) measures this pipeline end to end.
 
 ## Question and answer so far
 
