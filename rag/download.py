@@ -43,17 +43,17 @@ def html_to_text(html: str) -> str:
     return "\n".join(line for line in lines if line)
 
 
-def main() -> None:
-    (DATA / "raw").mkdir(parents=True, exist_ok=True)
-    (DATA / "text").mkdir(parents=True, exist_ok=True)
+def main(data: Path = DATA) -> None:
+    (data / "raw").mkdir(parents=True, exist_ok=True)
+    (data / "text").mkdir(parents=True, exist_ok=True)
     for key, src in SOURCES.items():
-        raw = DATA / "raw" / f"{key}.html"
+        raw = data / "raw" / f"{key}.html"
         if not raw.exists():
             req = urllib.request.Request(url(src["celex"]), headers={"User-Agent": "rag-from-scratch/0.1"})
             with urllib.request.urlopen(req, timeout=120) as resp:
                 raw.write_bytes(resp.read())
         text = html_to_text(raw.read_text(encoding="utf-8"))
-        (DATA / "text" / f"{key}.txt").write_text(text, encoding="utf-8")
+        (data / "text" / f"{key}.txt").write_text(text, encoding="utf-8")
         print(f"{key:9s} {src['celex']}  {len(text.split()):>7,} words")
 
 

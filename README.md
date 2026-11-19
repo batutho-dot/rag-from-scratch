@@ -48,6 +48,9 @@ both indexes, scores both, prints every question with the rank where its answer 
 and writes `results/latest.json`. The first run also downloads the embedding model (a
 quantised ONNX copy, about 65 MB, cached by `fastembed`). No GPU, no API key, no cost.
 `python -m rag.evaluate --only a` runs the numpy version alone in under a second.
+`python verify.py` checks the code after a change (about 1 second; `--full` adds version B,
+about 2 minutes) and ends with `verify: PASS` or `verify: FAIL at <step>`. What each step
+covers is in `verify-features/`.
 
 On Windows the model download may print a warning about symlinks; it is harmless.
 
