@@ -1,0 +1,14 @@
+# Secrets and local settings
+.env*
+*.key
+
+# Downloaded EU texts and model files: fetched by run.py, never committed
+data/
+.cache/
+*.onnx
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+results/latest_*.json

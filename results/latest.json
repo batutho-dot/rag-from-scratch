@@ -1,0 +1,50 @@
+{
+  "time_utc": "2026-11-19T00:54:41+00:00",
+  "k": 5,
+  "chunks": 1257,
+  "chunk_words": 200,
+  "overlap": 50,
+  "A_tfidf_numpy": {
+    "hits_at_k": {
+      "1": 5,
+      "3": 6,
+      "5": 6,
+      "10": 7
+    },
+    "rank_of_answer": {
+      "q01": null,
+      "q02": 1,
+      "q03": 1,
+      "q04": null,
+      "q05": 3,
+      "q06": 1,
+      "q07": null,
+      "q08": 1,
+      "q09": 1,
+      "q10": 6
+    },
+    "seconds": 0.3
+  },
+  "B_embedding": {
+    "hits_at_k": {
+      "1": 2,
+      "3": 3,
+      "5": 6,
+      "10": 8
+    },
+    "rank_of_answer": {
+      "q01": 3,
+      "q02": 1,
+      "q03": 1,
+      "q04": null,
+      "q05": 9,
+      "q06": 5,
+      "q07": null,
+      "q08": 5,
+      "q09": 8,
+      "q10": 4
+    },
+    "model": "BAAI/bge-small-en-v1.5",
+    "seconds": 125.6
+  }
+}

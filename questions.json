@@ -1,0 +1,72 @@
+[
+  {
+    "id": "q01",
+    "question": "What are the environmental objectives of the EU Taxonomy?",
+    "doc": "taxonomy",
+    "where": "Regulation (EU) 2020/852, Article 9",
+    "evidence": "For the purposes of this Regulation, the following shall be environmental objectives"
+  },
+  {
+    "id": "q02",
+    "question": "Which international guidelines do the Taxonomy's minimum safeguards refer to?",
+    "doc": "taxonomy",
+    "where": "Regulation (EU) 2020/852, Article 18(1)",
+    "evidence": "to ensure the alignment with the OECD Guidelines for Multinational Enterprises and the UN Guiding Principles on Business and Human Rights"
+  },
+  {
+    "id": "q03",
+    "question": "When is an economic activity considered to do significant harm to climate change mitigation?",
+    "doc": "taxonomy",
+    "where": "Regulation (EU) 2020/852, Article 17(1)(a)",
+    "evidence": "climate change mitigation, where that activity leads to significant greenhouse gas emissions"
+  },
+  {
+    "id": "q04",
+    "question": "What two kinds of information must a company's sustainability reporting cover under the CSRD?",
+    "doc": "csrd",
+    "where": "Directive (EU) 2022/2464, Article 1(4), new Article 19a(1) of Directive 2013/34/EU",
+    "evidence": "information necessary to understand the undertaking's impacts on sustainability matters, and information necessary to understand how sustainability matters affect the undertaking's development, performance and position"
+  },
+  {
+    "id": "q05",
+    "question": "From which financial year must large public-interest entities with more than 500 employees report under the CSRD?",
+    "doc": "csrd",
+    "where": "Directive (EU) 2022/2464, Article 5(2)(a)(i)",
+    "evidence": "for financial years starting on or after 1 January 2024: (i) to large undertakings within the meaning of Article 3(4) of Directive 2013/34/EU which are public-interest entities"
+  },
+  {
+    "id": "q06",
+    "question": "By what date must the Commission adopt standards for reasonable assurance of sustainability reporting?",
+    "doc": "csrd",
+    "where": "Directive (EU) 2022/2464, Article 3(15), new Article 26a(3) of Directive 2006/43/EC",
+    "evidence": "no later than 1 October 2028, adopt delegated acts in accordance with Article 48a in order to supplement this Directive in order to provide for reasonable assurance standards"
+  },
+  {
+    "id": "q07",
+    "question": "In what digital format does the management report with the sustainability statement have to be prepared?",
+    "doc": "csrd",
+    "where": "Directive (EU) 2022/2464, Article 1(9), new Article 29d(1) of Directive 2013/34/EU",
+    "evidence": "shall prepare their management report in the electronic reporting format specified in Article 3 of Commission Delegated Regulation (EU) 2019/815"
+  },
+  {
+    "id": "q08",
+    "question": "How long is the medium-term time horizon in the ESRS?",
+    "doc": "esrs",
+    "where": "Delegated Regulation (EU) 2023/2772, Annex I, ESRS 1, section 6.4",
+    "evidence": "for the medium-term time horizon: from the end of the short-term reporting period defined in (a) up to 5 years"
+  },
+  {
+    "id": "q09",
+    "question": "Which information must a company always disclose, whatever its materiality assessment finds?",
+    "doc": "esrs",
+    "where": "Delegated Regulation (EU) 2023/2772, Annex I, ESRS 1, section 3.2",
+    "evidence": "Irrespective of the outcome of its materiality assessment, the undertaking shall always disclose the information required by: ESRS 2 General Disclosures"
+  },
+  {
+    "id": "q10",
+    "question": "Which ESRS disclosure requirement asks for a company's Scope 1, 2 and 3 greenhouse gas emissions?",
+    "doc": "esrs",
+    "where": "Delegated Regulation (EU) 2023/2772, Annex I, ESRS E1",
+    "evidence": "Disclosure Requirement E1-6 - Gross Scopes 1, 2, 3 and Total GHG emissions"
+  }
+]
