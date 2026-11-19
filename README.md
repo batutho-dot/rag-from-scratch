@@ -37,10 +37,8 @@ Per-question table, failure analysis, downloads and checks: [docs/details.md](do
 
 ## Limits
 
-- 10 questions is small: one question is 10 percentage points, so the tie says nothing general.
-- I wrote the questions knowing the texts, which favours A. Questions from people who have not read the law would likely favour B.
-- The texts have no later amendments. q05 reflects the 2022 text, which may differ from the law today.
-- The hit rates cover retrieval only. `ask.py` answers are not scored.
+- 10 questions is small: one question is 10 percentage points, so the tie says nothing general. The hit rates cover retrieval only; `ask.py` answers are not scored.
+- I wrote the questions knowing the texts, which favours A. Questions from people who have not read the law would likely favour B. The texts have no later amendments, so q05 reflects the 2022 text, which may differ from the law today.
 
 ## Data and licence
 
