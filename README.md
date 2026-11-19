@@ -33,6 +33,47 @@ tried on 3 questions, not scored.
 answers from only the returned chunks. If the right chunk is not in the top k, the model
 never sees it, so retrieval is measured first.
 
+## How it is built
+
+One question's path through the code. Version A and version B differ only in how they turn text into numbers; chunking before the split and top-k after it are shared.
+
+```mermaid
+flowchart TD
+    texts["3 EU texts<br/>plain text<br/>188k words"]
+    chunks["chunk_text<br/>200 words each<br/>50-word overlap<br/>1,257 chunks"]
+    question["your question<br/>plain English"]
+
+    subgraph A["Version A: word counts"]
+        a1["tokenize<br/>lowercase words<br/>drop stopwords"]
+        a2["TF-IDF vector<br/>one number per word<br/>rare words weigh more"]
+    end
+
+    subgraph B["Version B: embedding model"]
+        b1["add query prefix<br/>bge instruction"]
+        b2["bge-small vector<br/>384 numbers<br/>meaning, not words"]
+    end
+
+    cosine["cosine similarity<br/>matrix times vector<br/>one score per chunk"]
+    topk["top-k<br/>sort scores<br/>keep best 5"]
+    score["evaluate.py<br/>is the evidence phrase<br/>in the top 5?"]
+    answer["ask.py, optional<br/>Claude reads 5 chunks<br/>cited answer or<br/>not in the documents"]
+
+    texts --> chunks
+    chunks --> a2
+    chunks --> b2
+    question --> a1
+    question --> b1
+    a1 --> a2
+    b1 --> b2
+    a2 --> cosine
+    b2 --> cosine
+    cosine --> topk
+    topk --> score
+    topk --> answer
+```
+
+The file-by-file structure, with the line where each box lives, is in [docs/architecture.md](docs/architecture.md).
+
 ## Run it
 
 Tested on Python 3.13 (Windows 11). From the repo folder:
