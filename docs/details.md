@@ -1,108 +1,36 @@
 # Details
 
-This file holds the longer notes moved out of the README.
+Part 1 of the series, the starting point. Next: [rag-eval](https://github.com/batutho-dot/rag-eval) measures this pipeline end to end.
 
-## Series header, second line
+## Question and answer
 
-This is part 1, the starting point. Next: [rag-eval](https://github.com/batutho-dot/rag-eval) measures this pipeline end to end.
+**Question:** how often does a simple search engine return the passage of EU sustainability reporting law that answers a plain-English question? Does a small embedding model beat word counting written by hand in numpy?
 
-## Question and answer so far
+**Answer (10 questions, k = 5):** both versions score 6 / 10 (README), on different questions (table below). The scores measure retrieval only. `ask.py` adds the answering half with Claude, tried on 3 questions and not scored.
 
-**Question:** if you ask a plain-English question about EU sustainability reporting rules,
-how often does a simple search engine hand back the passage of law that answers it? And
-does a small neural embedding model beat a word-counting method written by hand in numpy?
+## Terms
 
-**Answer so far (10 questions, k = 5):** version A and version B both score 6 / 10 (table in the README).
+- **Chunk.** A 200-word piece of text, overlapping the next by 50, so a sentence cut at one edge is whole in the neighbour. The three texts give 1,257 chunks.
+- **Embedding.** A list of numbers for each chunk and question. Version A: one number per vocabulary word (TF-IDF, high when a word is frequent in this chunk and rare elsewhere). Version B: 384 numbers from a small trained model that puts similar meanings close together, even with no shared words.
+- **Top-k.** Compare the question with every chunk by cosine similarity (how closely two vectors point the same way) and return the k most similar. Here k = 5.
+- **RAG.** These steps, then a language model that answers from the returned chunks only. A chunk outside the top k never reaches it, so I measure retrieval first.
 
-Same score, different questions right and wrong (table below). The scores measure retrieval
-only. `ask.py` adds the answering half with Claude (see "Ask it a question"); its answers are
-tried on 3 questions, not scored.
-
-## The three ideas, in plain words
-
-- **Chunk.** A regulation is far too long to hand to a reader, so each text is cut into
-  pieces of 200 words. Each piece overlaps the next by 50 words, so a sentence cut at one
-  edge is still whole in the neighbour. The three texts give 1,257 chunks.
-- **Embedding (a vector).** Each chunk, and each question, becomes a list of numbers so a
-  computer can compare them. Version A uses one number per word in the vocabulary (TF-IDF:
-  high when a word is frequent in this chunk and rare elsewhere). Version B uses 384 numbers
-  from a small trained model that places texts with similar meaning close together, even
-  when they share no words.
-- **Top-k.** Compare the question's vector with every chunk's vector (cosine similarity:
-  how closely two vectors point the same way) and return the k most similar chunks. Here
-  k = 5.
-
-**RAG** (retrieval-augmented generation) is these steps followed by a language model that
-answers from only the returned chunks. If the right chunk is not in the top k, the model
-never sees it, so retrieval is measured first.
-
-## How it is built
-
-One question's path through the code. Version A and version B differ only in how they turn text into numbers; chunking before the split and top-k after it are shared.
-
-```mermaid
-flowchart TD
-    texts["3 EU texts<br/>plain text<br/>188k words"]
-    chunks["chunk_text<br/>200 words each<br/>50-word overlap<br/>1,257 chunks"]
-    question["your question<br/>plain English"]
-
-    subgraph A["Version A: word counts"]
-        a1["tokenize<br/>lowercase words<br/>drop stopwords"]
-        a2["TF-IDF vector<br/>one number per word<br/>rare words weigh more"]
-    end
-
-    subgraph B["Version B: embedding model"]
-        b1["add query prefix<br/>bge instruction"]
-        b2["bge-small vector<br/>384 numbers<br/>meaning, not words"]
-    end
-
-    cosine["cosine similarity<br/>matrix times vector<br/>one score per chunk"]
-    topk["top-k<br/>sort scores<br/>keep best 5"]
-    score["evaluate.py<br/>is the evidence phrase<br/>in the top 5?"]
-    answer["ask.py, optional<br/>Claude reads 5 chunks<br/>cited answer or<br/>not in the documents"]
-
-    texts --> chunks
-    chunks --> a2
-    chunks --> b2
-    question --> a1
-    question --> b1
-    a1 --> a2
-    b1 --> b2
-    a2 --> cosine
-    b2 --> cosine
-    cosine --> topk
-    topk --> score
-    topk --> answer
-```
-
-The file-by-file structure, with the line where each box lives, is in [docs/architecture.md](architecture.md).
+Diagrams and the line of each box: [docs/architecture.md](architecture.md).
 
 ## Run it
 
-`run.py` downloads the three texts from EUR-Lex into `data/` (about 6 MB of HTML), builds
-both indexes, scores both, prints every question with the rank where its answer was found,
-and writes `results/latest.json`. The first run also downloads the embedding model (a
-quantised ONNX copy, about 65 MB, cached by `fastembed`). No GPU, no API key, no cost.
-`python -m rag.evaluate --only a` runs the numpy version alone in under a second.
-`python verify.py` checks the code after a change (about 1 second; `--full` adds version B,
-about 2 minutes) and ends with `verify: PASS` or `verify: FAIL at <step>`. What each step
-covers is in `verify-features/`.
+`run.py` downloads the three texts from EUR-Lex into `data/` (about 6 MB of HTML), builds and scores both indexes, prints each question with the rank of its answer, and writes `results/latest.json`. The first run also downloads the embedding model (quantised ONNX, about 65 MB, cached by `fastembed`). No GPU, no API key, no cost.
 
-On Windows the model download may print a warning about symlinks; it is harmless.
+- `python -m rag.evaluate --only a` runs version A alone in under a second.
+- `python verify.py` checks the code after a change (about 1 second; `--full` adds version B, about 2 minutes) and ends with `verify: PASS` or `verify: FAIL at <step>`. `verify-features/` lists what each step covers.
 
-## Data
+On Windows the model download may print a symlink warning. It is harmless.
 
-The texts are the versions as published in the Official Journal, fetched as HTML from
-`https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:<number>`. They are not
-stored in this repo; `run.py` downloads them.
+The texts are the Official Journal versions, fetched from `https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:<number>`. They are not stored in this repo.
 
 ## The test set
 
-`questions.json` holds 10 questions, 3 on the Taxonomy, 4 on the CSRD, 3 on the ESRS. Each
-carries the exact words of the law that answer it (`evidence`) and where they sit
-(`where`). A question is a **hit** when any of the top 5 chunks contains its evidence
-phrase. The script first checks that every evidence phrase exists in the downloaded text,
-so a broken test fails loudly instead of scoring zero.
+`questions.json` holds 10 questions: 3 on the Taxonomy, 4 on the CSRD, 3 on the ESRS. Each has the exact words of the law that answer it (`evidence`) and where they sit (`where`). A **hit** is any of the top 5 chunks containing the evidence phrase. The script first checks that every phrase exists in the downloaded text, so a broken test fails loudly instead of scoring zero.
 
 | # | Question | A rank | B rank |
 |---|---|---|---|
@@ -117,46 +45,23 @@ so a broken test fails loudly instead of scoring zero.
 | q09 | Which information must a company always disclose, whatever its materiality assessment finds? | 1 | 8 |
 | q10 | Which ESRS disclosure requirement asks for a company's Scope 1, 2 and 3 greenhouse gas emissions? | 6 | 4 |
 
-Hit rate at other depths, same run (table in the [README](../README.md)).
+Hit rate at other depths: [README](../README.md).
 
-Reading it: A is sharper when the question repeats the law's own words ("minimum
-safeguards", "medium-term time horizon"): 5 of 10 at rank 1. B finds paraphrased questions
-that A misses completely (q01, q10) but rarely puts the answer first: 2 of 10 at rank 1.
+A is sharper when the question repeats the law's words ("minimum safeguards", "medium-term time horizon"): 5 of 10 at rank 1. B finds paraphrased questions A misses (q01, q10) but rarely ranks the answer first: 2 of 10 at rank 1.
 
-## What it gets wrong, and why
+## What it gets wrong
 
-**q07 (digital format), both versions miss, and the miss is partly the test's fault.**
-Version A's first result is chunk `csrd#0078`, recital text that says undertakings "should
-therefore be required to prepare their management report in the electronic reporting format
-specified in Article 3 of Commission Delegated Regulation (EU) 2019/815". That answers the
-question. The test only accepts the operative article (new Article 29d(1)), so it is scored
-a miss. A test set that allows several accepted passages per question would score it a hit.
+**q07 (digital format): both miss, partly the test's fault.** Version A's first result is chunk `csrd#0078`, a recital saying undertakings "should therefore be required to prepare their management report in the electronic reporting format specified in Article 3 of Commission Delegated Regulation (EU) 2019/815". That answers the question. The test accepts only the operative article (new Article 29d(1)), so it scores a miss.
 
-**q04 (the two kinds of information), both versions miss, a real failure.** The answer is
-the CSRD's "double materiality" sentence: information on the company's impacts on
-sustainability matters, and on how sustainability matters affect the company. The question
-says "two kinds of information", words the law does not use, and the ESRS discusses impacts
-and materiality in hundreds of places. ESRS makes up 871 of the 1,257 chunks (69 percent),
-so ESRS chunks crowd the top of the list for both versions.
+**q04 (two kinds of information): both miss, a real failure.** The answer is the CSRD's "double materiality" sentence: the company's impacts on sustainability matters, and how sustainability matters affect the company. The question says "two kinds of information", which the law does not, and the ESRS discusses impacts and materiality in hundreds of places. ESRS is 871 of the 1,257 chunks (69 percent), so it crowds the top for both versions.
 
-## Limits
-
-Limits moved out of the README:
-
-- One accepted passage per question (see q07).
-- Fixed 200-word chunks ignore article boundaries, and the ESRS tables are flattened to
-  plain lines.
+Other limits: one accepted passage per question (see q07). Fixed 200-word chunks ignore article boundaries, and the ESRS tables are flattened to plain lines.
 
 ## Ask it a question
 
-`ask.py` is the full RAG loop: it retrieves the top 5 chunks (version B by default), sends
-only those to Claude with the instruction to answer from them alone, cite the chunk ids, and
-reply "not in the documents" when the passages do not hold the answer. It prints the
-answer, the chunks it sent, and the tokens and cost of the call, and appends each call to
-`results/ask_log.jsonl`.
+`ask.py` is the full RAG loop. It retrieves the top 5 chunks (version B by default), sends only those to Claude with the instruction to answer from them alone, cite the chunk ids, and reply "not in the documents" if they do not hold the answer. It prints the answer, the chunks, and the tokens and cost, and appends each call to `results/ask_log.jsonl`.
 
-It needs an Anthropic API key in the `ANTHROPIC_API_KEY` environment variable (on Windows a
-saved user variable is picked up). After `python run.py` has downloaded the texts:
+It needs an Anthropic API key in `ANTHROPIC_API_KEY` (on Windows a saved user variable works). After `python run.py` has downloaded the texts:
 
 ```bash
 python ask.py "What are the environmental objectives of the EU Taxonomy?"
@@ -165,10 +70,9 @@ python ask.py --model sonnet "..."   # Claude Sonnet 5.5 instead of Claude Haiku
 python ask.py --retriever a "..."    # TF-IDF retrieval instead of embeddings
 ```
 
-The first call with version B embeds all chunks (about 3 minutes on a laptop CPU) and caches
-them in `data/cache/`; later calls start in about a second.
+The first call with version B embeds all chunks (about 3 minutes on a laptop CPU) and caches them in `data/cache/`. Later calls start in about a second.
 
-Tried on 3 of the 10 test questions with Claude Haiku 5.5 (2026-11-19, effort `low`):
+Tried on 3 of the 10 questions with Claude Haiku 5.5 (2026-11-19, effort `low`):
 
 | Question | Retrieved the answer? | Answer | Tokens in / out | Cost |
 |---|---|---|---|---|
@@ -176,15 +80,10 @@ Tried on 3 of the 10 test questions with Claude Haiku 5.5 (2026-11-19, effort `l
 | q04 two kinds of information (CSRD) | no | Wrong: answered "forward-looking and retrospective, qualitative and quantitative" from a recital, instead of the double materiality pair; flagged that the passage only says "should" | 2,380 / 461 | $0.00047 |
 | q07 digital format | the recital, not the article | Right: the format in Article 3 of Delegated Regulation (EU) 2019/815, cited | 2,421 / 124 | $0.00030 |
 
-Total for the 3 calls: $0.00109, using Anthropic's list prices of $0.10 per million input
-tokens and $0.50 per million output tokens for Claude Haiku 5.5 (model table dated
-2026-11-03). Output tokens include the model's hidden reasoning.
+Total for the 3 calls: $0.00109, at Anthropic's list prices of $0.10 per million input tokens and $0.50 per million output tokens for Claude Haiku 5.5 (model table dated 2026-11-03). Output tokens include hidden reasoning.
 
-q04 shows the main risk of RAG: when retrieval misses, the model does not say "not in the
-documents". It answers a nearby question from whatever passage it was given. That is a
-retrieval failure that turns into a wrong answer, and it is what the next project measures.
+q04 shows the main risk of RAG. When retrieval misses, the model does not say "not in the documents". It answers a nearby question from whatever passage it got. The next project measures that.
 
 ## Next
 
-Planned follow-ups on the same corpus: a test set with questions the texts cannot answer
-and several accepted passages per question, then cited answers from a language model.
+A test set with questions the texts cannot answer and several accepted passages per question, then cited answers from a language model.
