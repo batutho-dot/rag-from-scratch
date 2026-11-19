@@ -5,6 +5,9 @@ so "green investments" can match "environmentally sustainable economic activitie
 with no word in common.
 """
 
+import hashlib
+from pathlib import Path
+
 import numpy as np
 
 MODEL = "BAAI/bge-small-en-v1.5"
@@ -13,11 +16,22 @@ QUERY_PREFIX = "Represent this sentence for searching relevant passages: "
 
 
 class EmbeddingIndex:
-    def __init__(self, texts: list[str]):
+    def __init__(self, texts: list[str], cache: Path | None = None):
+        """cache: optional .npy file. Embedding 1,257 chunks takes about 2 minutes on a
+        laptop CPU, so ask.py stores the result and reuses it while the chunks are unchanged."""
         from fastembed import TextEmbedding
 
         self.model = TextEmbedding(MODEL)
+        key = hashlib.sha256((MODEL + "\n" + "\n".join(texts)).encode("utf-8")).hexdigest()
+        stamp = cache.with_suffix(".sha256") if cache else None
+        if cache and cache.exists() and stamp.exists() and stamp.read_text() == key:
+            self.matrix = np.load(cache)
+            return
         self.matrix = self._unit(np.array(list(self.model.embed(texts, batch_size=64))))
+        if cache:
+            cache.parent.mkdir(parents=True, exist_ok=True)
+            np.save(cache, self.matrix)
+            stamp.write_text(key)
 
     @staticmethod
     def _unit(m: np.ndarray) -> np.ndarray:

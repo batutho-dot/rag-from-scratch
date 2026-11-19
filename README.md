@@ -11,8 +11,9 @@ does a small neural embedding model beat a word-counting method written by hand 
 | A | TF-IDF word counts, written by hand in numpy | **6 / 10** |
 | B | `BAAI/bge-small-en-v1.5` embedding model on the CPU | **6 / 10** |
 
-Same score, different questions right and wrong (table below). This is the retrieval half of
-RAG only: there is no language model writing answers yet.
+Same score, different questions right and wrong (table below). The scores measure retrieval
+only. `ask.py` adds the answering half with Claude (see "Ask it a question"); its answers are
+tried on 3 questions, not scored.
 
 ## The three ideas, in plain words
 
@@ -126,7 +127,44 @@ so ESRS chunks crowd the top of the list for both versions.
 - Texts as originally published in the Official Journal. Later amendments are not
   included, so an answer such as q05 reflects the 2022 text, which may differ from the law
   in force today.
-- Retrieval only. This repo does not generate or check answers.
+- The hit rates measure retrieval only. Answers from `ask.py` are not scored yet.
+
+## Ask it a question
+
+`ask.py` is the full RAG loop: it retrieves the top 5 chunks (version B by default), sends
+only those to Claude with the instruction to answer from them alone, cite the chunk ids, and
+reply "not in the documents" when the passages do not hold the answer. It prints the
+answer, the chunks it sent, and the tokens and cost of the call, and appends each call to
+`results/ask_log.jsonl`.
+
+It needs an Anthropic API key in the `ANTHROPIC_API_KEY` environment variable (on Windows a
+saved user variable is picked up). After `python run.py` has downloaded the texts:
+
+```bash
+python ask.py "What are the environmental objectives of the EU Taxonomy?"
+python ask.py -i                     # ask several questions; empty line quits
+python ask.py --model sonnet "..."   # Claude Sonnet 5.5 instead of Claude Haiku 5.5
+python ask.py --retriever a "..."    # TF-IDF retrieval instead of embeddings
+```
+
+The first call with version B embeds all chunks (about 3 minutes on a laptop CPU) and caches
+them in `data/cache/`; later calls start in about a second.
+
+Tried on 3 of the 10 test questions with Claude Haiku 5.5 (2026-11-19, effort `low`):
+
+| Question | Retrieved the answer? | Answer | Tokens in / out | Cost |
+|---|---|---|---|---|
+| q01 environmental objectives | yes (`taxonomy#0058`, Article 9) | Right: all six objectives, cited | 2,380 / 162 | $0.00032 |
+| q04 two kinds of information (CSRD) | no | Wrong: answered "forward-looking and retrospective, qualitative and quantitative" from a recital, instead of the double materiality pair; flagged that the passage only says "should" | 2,380 / 461 | $0.00047 |
+| q07 digital format | the recital, not the article | Right: the format in Article 3 of Delegated Regulation (EU) 2019/815, cited | 2,421 / 124 | $0.00030 |
+
+Total for the 3 calls: $0.00109, using Anthropic's list prices of $0.10 per million input
+tokens and $0.50 per million output tokens for Claude Haiku 5.5 (model table dated
+2026-11-03). Output tokens include the model's hidden reasoning.
+
+q04 shows the main risk of RAG: when retrieval misses, the model does not say "not in the
+documents". It answers a nearby question from whatever passage it was given. That is a
+retrieval failure that turns into a wrong answer, and it is what the next project measures.
 
 ## Next
 
