@@ -1,5 +1,8 @@
 # RAG from scratch on EU sustainability law
 
+> **Part of a series on RAG over EU sustainability law:** **rag-from-scratch** (retrieval built by hand) → [rag-eval](https://github.com/batutho-dot/rag-eval) (measured: three scores and a Claude judge) → [rag-claude-citations](https://github.com/batutho-dot/rag-claude-citations) (API-native: citations and caching)\
+> This is part 1, the starting point. Next: [rag-eval](https://github.com/batutho-dot/rag-eval) measures this pipeline end to end.
+
 **Question:** if you ask a plain-English question about EU sustainability reporting rules,
 how often does a simple search engine hand back the passage of law that answers it? And
 does a small neural embedding model beat a word-counting method written by hand in numpy?

@@ -1,0 +1,31 @@
+name: verify
+
+# Offline checks on every push: no API key, no secrets, no paid calls.
+# The three EU texts are downloaded from EUR-Lex once and then cached.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - name: Cache the EUR-Lex texts
+        uses: actions/cache@v4
+        with:
+          path: data/raw
+          key: eurlex-${{ hashFiles('rag/sources.py') }}
+      - run: pip install -r requirements.txt
+      - name: Download the EU texts (skipped when cached)
+        run: python -m rag.download
+      - run: python verify.py
